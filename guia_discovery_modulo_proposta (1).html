@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Guia de Discovery · Módulo de Proposta Comercial</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --teal:    #0F6E56; --teal-lt: #E1F5EE; --teal-md: #1D9E75;
+    --purple:  #534AB7; --purple-lt: #EEEDFE; --purple-md: #7F77DD;
+    --amber:   #BA7517; --amber-lt: #FAEEDA; --amber-md: #EF9F27;
+    --blue:    #185FA5; --blue-lt: #E6F1FB;  --blue-md: #378ADD;
+    --red:     #A32D2D; --red-lt: #FCE4EC;
+    --gray-lt: #F1EFE8; --ink: #1a1a18; --ink2: #4a4a47; --ink3: #888780;
+    --surface: #FAFAF8; --card: #FFFFFF; --border: #E2E0D8; --radius: 10px;
+    --todo-bg:#F1EFE8; --todo-fg:#5F5E5A;
+    --wip-bg:#FFF8E1;  --wip-fg:#BA7517;
+    --done-bg:#E1F5EE; --done-fg:#0F6E56;
+  }
+
+  body { font-family: 'DM Sans', system-ui, sans-serif; background: var(--surface); color: var(--ink); line-height: 1.65; font-size: 14px; }
+
+  .header { background: var(--ink); color: #fff; padding: 40px 48px 32px; }
+  .header-eyebrow { font-size: 11px; font-weight: 500; letter-spacing: .12em; text-transform: uppercase; color: var(--amber-md); margin-bottom: 10px; }
+  .header h1 { font-size: 26px; font-weight: 600; line-height: 1.25; margin-bottom: 10px; }
+  .header-sub { font-size: 14px; color: #aaa; }
+  .header-meta { display: flex; gap: 24px; margin-top: 24px; flex-wrap: wrap; }
+  .meta-pill { display: flex; align-items: center; gap: 6px; background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.12); border-radius: 20px; padding: 4px 14px; font-size: 12px; color: #ccc; }
+  .meta-dot { width: 7px; height: 7px; border-radius: 50%; }
+
+  .nav { position: sticky; top: 0; z-index: 100; background: var(--card); border-bottom: 1px solid var(--border); display: flex; padding: 0 48px; overflow-x: auto; }
+  .nav a { text-decoration: none; font-size: 12px; font-weight: 500; color: var(--ink3); padding: 14px 16px; border-bottom: 2px solid transparent; white-space: nowrap; transition: color .15s, border-color .15s; }
+  .nav a.f1:hover,.nav a.f1.active { color: var(--teal);   border-color: var(--teal); }
+  .nav a.f2:hover,.nav a.f2.active { color: var(--purple); border-color: var(--purple); }
+  .nav a.f3:hover,.nav a.f3.active { color: var(--amber);  border-color: var(--amber); }
+  .nav a.f4:hover,.nav a.f4.active { color: var(--blue);   border-color: var(--blue); }
+  .nav a.doc:hover,.nav a.doc.active { color: var(--red);  border-color: var(--red); }
+
+  .container { max-width: 860px; margin: 0 auto; padding: 0 48px 80px; }
+
+  .phase-header { display: flex; align-items: flex-start; gap: 16px; padding: 48px 0 20px; }
+  .phase-badge { width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 600; flex-shrink: 0; }
+  .phase-badge.f1  { background: var(--teal-lt);   color: var(--teal); }
+  .phase-badge.f2  { background: var(--purple-lt); color: var(--purple); }
+  .phase-badge.f3  { background: var(--amber-lt);  color: var(--amber); }
+  .phase-badge.f4  { background: var(--blue-lt);   color: var(--blue); }
+  .phase-badge.doc { background: var(--red-lt);    color: var(--red); }
+  .phase-info h2   { font-size: 18px; font-weight: 600; line-height: 1.2; }
+  .phase-info .phase-meta { font-size: 12px; color: var(--ink3); margin-top: 3px; }
+  .phase-goal { font-size: 13px; color: var(--ink2); background: var(--gray-lt); border-left: 3px solid var(--border); padding: 10px 14px; border-radius: 0 6px 6px 0; margin-bottom: 24px; }
+
+  /* STEP */
+  .step { display: flex; align-items: flex-start; gap: 12px; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; transition: border-color .15s, background .2s; margin-bottom: 10px; border-left-width: 3px; }
+  .step:hover { border-color: #bbb; }
+  .step[data-status="todo"]     { border-left-color: var(--border); }
+  .step[data-status="progress"] { border-left-color: var(--amber-md); background: #FFFDF6; }
+  .step[data-status="done"]     { border-left-color: var(--teal-md); opacity: .58; }
+  .step[data-status="done"] .step-title { text-decoration: line-through; color: var(--ink3); }
+
+  /* STATUS BUTTON */
+  .status-btn { display: inline-flex; align-items: center; gap: 5px; font-size: 10px; font-weight: 600; padding: 4px 10px; border-radius: 20px; border: none; cursor: pointer; white-space: nowrap; flex-shrink: 0; transition: opacity .15s, transform .1s; margin-top: 2px; font-family: inherit; }
+  .status-btn:hover { opacity: .78; }
+  .status-btn:active { transform: scale(.95); }
+  .status-btn .dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+  .status-btn.todo     { background: var(--todo-bg); color: var(--todo-fg); }
+  .status-btn.todo .dot     { background: var(--todo-fg); }
+  .status-btn.progress { background: var(--wip-bg);  color: var(--wip-fg); }
+  .status-btn.progress .dot { background: var(--wip-fg); }
+  .status-btn.done     { background: var(--done-bg); color: var(--done-fg); }
+  .status-btn.done .dot     { background: var(--done-fg); }
+
+  .step-num { width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; flex-shrink: 0; margin-top: 2px; }
+  .step-num.f1 { background: var(--teal-lt);   color: var(--teal); }
+  .step-num.f2 { background: var(--purple-lt); color: var(--purple); }
+  .step-num.f3 { background: var(--amber-lt);  color: var(--amber); }
+  .step-num.f4 { background: var(--blue-lt);   color: var(--blue); }
+  .step-body { flex: 1; min-width: 0; }
+  .step-title { font-size: 13px; font-weight: 500; color: var(--ink); }
+  .step-desc  { font-size: 12px; color: var(--ink2); margin-top: 3px; line-height: 1.5; }
+
+  .tags { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
+  .tag { font-size: 10px; font-weight: 500; padding: 2px 8px; border-radius: 20px; }
+  .tag.eng     { background: #F3E5F5; color: #6A1B9A; }
+  .tag.dados   { background: #E0F7FA; color: #00695C; }
+  .tag.dba     { background: #FCE4EC; color: #AD1457; }
+  .tag.negocio { background: var(--teal-lt); color: var(--teal); }
+  .tag.produto { background: var(--blue-lt); color: var(--blue); }
+  .tag.bloq    { background: #FFF8E1; color: #F57F17; }
+
+  .warn { display: flex; gap: 10px; align-items: flex-start; background: #FFF8E1; border: 1px solid #F0C030; border-radius: var(--radius); padding: 12px 14px; margin-bottom: 16px; font-size: 12px; color: #5a3e00; line-height: 1.5; }
+
+  .exit { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; margin-bottom: 8px; font-size: 12px; color: var(--ink2); }
+  .exit strong { color: var(--ink); font-weight: 600; display: block; margin-bottom: 6px; }
+  .exit-item { display: flex; gap: 8px; padding: 4px 0; border-top: 1px solid var(--gray-lt); }
+  .exit-item:first-of-type { border-top: none; }
+  .exit-tick { color: var(--teal-md); font-weight: 700; flex-shrink: 0; }
+
+  .doc-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 24px; background: var(--card); border-radius: var(--radius); overflow: hidden; border: 1px solid var(--border); }
+  .doc-table th { background: var(--gray-lt); padding: 9px 12px; text-align: left; font-weight: 600; font-size: 11px; color: var(--ink2); border-bottom: 1px solid var(--border); }
+  .doc-table td { padding: 9px 12px; border-bottom: 1px solid var(--gray-lt); vertical-align: top; color: var(--ink2); }
+  .doc-table tr:last-child td { border-bottom: none; }
+  .doc-table td:first-child { font-weight: 500; color: var(--ink); }
+  .notion { display: inline-block; background: #000; color: #fff; font-size: 10px; padding: 1px 6px; border-radius: 4px; font-family: 'DM Mono', monospace; }
+  .figjam { display: inline-block; background: #F24E1E; color: #fff; font-size: 10px; padding: 1px 6px; border-radius: 4px; font-family: 'DM Mono', monospace; }
+  .sheet  { display: inline-block; background: #0F9D58; color: #fff; font-size: 10px; padding: 1px 6px; border-radius: 4px; font-family: 'DM Mono', monospace; }
+
+  .section-label { font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--ink3); margin: 20px 0 10px; }
+
+  /* OVERVIEW + PROGRESS */
+  .overview { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; padding: 32px 0 8px; }
+  .ov-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; cursor: pointer; transition: border-color .15s; }
+  .ov-card:hover { border-color: #bbb; }
+  .ov-card-phase { font-size: 10px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; margin-bottom: 6px; }
+  .ov-card-phase.f1 { color: var(--teal); }
+  .ov-card-phase.f2 { color: var(--purple); }
+  .ov-card-phase.f3 { color: var(--amber); }
+  .ov-card-phase.f4 { color: var(--blue); }
+  .ov-card-name  { font-size: 13px; font-weight: 600; color: var(--ink); line-height: 1.3; margin-bottom: 6px; }
+  .ov-card-month { font-size: 11px; color: var(--ink3); margin-bottom: 8px; }
+  .ov-pct { font-size: 11px; color: var(--ink3); display: flex; justify-content: space-between; margin-bottom: 4px; }
+  .progress-track { background: var(--gray-lt); border-radius: 20px; height: 5px; overflow: hidden; display: flex; }
+  .pbar-done { height: 100%; transition: width .4s; }
+  .pbar-wip  { height: 100%; opacity: .4; transition: width .4s; }
+  .pbar-done.f1,.pbar-wip.f1 { background: var(--teal-md); }
+  .pbar-done.f2,.pbar-wip.f2 { background: var(--purple-md); }
+  .pbar-done.f3,.pbar-wip.f3 { background: var(--amber-md); }
+  .pbar-done.f4,.pbar-wip.f4 { background: var(--blue-md); }
+
+  .status-legend { display: flex; gap: 16px; margin-bottom: 20px; flex-wrap: wrap; align-items: center; }
+  .sl-pill { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--ink3); }
+  .sl-dot  { width: 8px; height: 8px; border-radius: 50%; }
+
+  .routine-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 24px; }
+  .routine-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; }
+  .routine-card h4 { font-size: 12px; font-weight: 600; color: var(--ink); margin-bottom: 10px; }
+  .routine-item { display: flex; gap: 8px; font-size: 12px; color: var(--ink2); padding: 5px 0; border-top: 1px solid var(--gray-lt); line-height: 1.45; }
+  .routine-item:first-of-type { border-top: none; }
+  .routine-bullet { width: 5px; height: 5px; border-radius: 50%; background: var(--border); margin-top: 6px; flex-shrink: 0; }
+
+  section { scroll-margin-top: 50px; }
+  @media (max-width: 640px) {
+    .container,.header { padding-left: 20px; padding-right: 20px; }
+    .nav { padding: 0 20px; }
+    .overview { grid-template-columns: 1fr 1fr; }
+    .routine-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-eyebrow">Bilheteria Digital · Sistema Financeiro</div>
+  <h1>Guia de Discovery<br>Módulo de Proposta Comercial</h1>
+  <div class="header-sub">Referência de rotina · passo a passo · onde documentar</div>
+  <div class="header-meta">
+    <div class="meta-pill"><div class="meta-dot" style="background:#E24B4A"></div>Em andamento · Abril 2025</div>
+    <div class="meta-pill"><div class="meta-dot" style="background:#1D9E75"></div>Fase 1 + Fase 2 simultâneas</div>
+    <div class="meta-pill"><div class="meta-dot" style="background:#888"></div>4 fases · Junho entrega</div>
+  </div>
+</div>
+
+<nav class="nav">
+  <a href="#overview" class="f1">Visão geral</a>
+  <a href="#fase1"    class="f1">Fase 1 · AS-IS</a>
+  <a href="#fase2"    class="f2">Fase 2 · Modelagem</a>
+  <a href="#fase3"    class="f3">Fase 3 · Ideação</a>
+  <a href="#fase4"    class="f4">Fase 4 · PRD</a>
+  <a href="#docs"     class="doc">Onde documentar</a>
+  <a href="#rotina"   class="doc">Rotina semanal</a>
+</nav>
+
+<div class="container">
+
+  <section id="overview">
+    <div class="overview">
+      <div class="ov-card" onclick="document.getElementById('fase1').scrollIntoView({behavior:'smooth'})">
+        <div class="ov-card-phase f1">Fase 1</div>
+        <div class="ov-card-name">Escopo, AS-IS e dores</div>
+        <div class="ov-card-month">Abril</div>
+        <div class="ov-pct"><span id="lbl1">–</span><span id="pct1">0%</span></div>
+        <div class="progress-track"><div class="pbar-done f1" id="bar1d" style="width:0%"></div><div class="pbar-wip f1" id="bar1w" style="width:0%"></div></div>
+      </div>
+      <div class="ov-card" onclick="document.getElementById('fase2').scrollIntoView({behavior:'smooth'})">
+        <div class="ov-card-phase f2">Fase 2</div>
+        <div class="ov-card-name">Proxies, inputs e arquitetura</div>
+        <div class="ov-card-month">Abril → Maio</div>
+        <div class="ov-pct"><span id="lbl2">–</span><span id="pct2">0%</span></div>
+        <div class="progress-track"><div class="pbar-done f2" id="bar2d" style="width:0%"></div><div class="pbar-wip f2" id="bar2w" style="width:0%"></div></div>
+      </div>
+      <div class="ov-card" onclick="document.getElementById('fase3').scrollIntoView({behavior:'smooth'})">
+        <div class="ov-card-phase f3">Fase 3</div>
+        <div class="ov-card-name">Ideação e validação</div>
+        <div class="ov-card-month">Maio → Junho</div>
+        <div class="ov-pct"><span id="lbl3">–</span><span id="pct3">0%</span></div>
+        <div class="progress-track"><div class="pbar-done f3" id="bar3d" style="width:0%"></div><div class="pbar-wip f3" id="bar3w" style="width:0%"></div></div>
+      </div>
+      <div class="ov-card" onclick="document.getElementById('fase4').scrollIntoView({behavior:'smooth'})">
+        <div class="ov-card-phase f4">Fase 4</div>
+        <div class="ov-card-name">PRD, US e handoff</div>
+        <div class="ov-card-month">Junho</div>
+        <div class="ov-pct"><span id="lbl4">–</span><span id="pct4">0%</span></div>
+        <div class="progress-track"><div class="pbar-done f4" id="bar4d" style="width:0%"></div><div class="pbar-wip f4" id="bar4w" style="width:0%"></div></div>
+      </div>
+    </div>
+    <div class="status-legend">
+      <div class="sl-pill"><div class="sl-dot" style="background:var(--todo-fg)"></div>A fazer</div>
+      <div class="sl-pill"><div class="sl-dot" style="background:var(--wip-fg)"></div>Em andamento</div>
+      <div class="sl-pill"><div class="sl-dot" style="background:var(--done-fg)"></div>Concluído</div>
+      <span style="font-size:11px;color:var(--ink3)">— clique no status de cada item para alterá-lo</span>
+    </div>
+  </section>
+
+  <!-- FASE 1 -->
+  <section id="fase1">
+    <div class="phase-header">
+      <div class="phase-badge f1">F1</div>
+      <div class="phase-info">
+        <h2>Escopo · AS-IS · Dores · Jornadas de usuário</h2>
+        <div class="phase-meta">Abril · Em andamento agora · Bruno ✓ · Marcela ✓</div>
+      </div>
+    </div>
+    <div class="phase-goal">Entender como o processo funciona hoje antes de propor qualquer solução. O AS-IS validado é o artefato que ancora todas as decisões da Fase 2 em diante. Não avance sem ele.</div>
+    <div class="warn"><span>⚠</span>&nbsp;Campos não mapeados nessa fase causam retrabalho caro nas fases seguintes. Todo input sem owner identificado volta como bloqueio na Fase 2.</div>
+    <div class="section-label">Passo a passo</div>
+
+    <div class="step" data-phase="1" data-status="done">
+      <button class="status-btn done" onclick="cycleStatus(this)"><div class="dot"></div>Concluído</button>
+      <div class="step-num f1">1</div>
+      <div class="step-body"><div class="step-title">Validar visão técnica com Bruno</div><div class="step-desc">Alinhamento inicial sobre viabilidade e escopo técnico do módulo.</div><div class="tags"><span class="tag eng">Eng</span></div></div>
+    </div>
+
+    <div class="step" data-phase="1" data-status="done">
+      <button class="status-btn done" onclick="cycleStatus(this)"><div class="dot"></div>Concluído</button>
+      <div class="step-num f1">2</div>
+      <div class="step-body"><div class="step-title">Validar escopo com Marcela e demais stakeholders</div><div class="step-desc">Alinhamento de expectativas e prioridades com o time de negócio.</div><div class="tags"><span class="tag negocio">Negócio</span></div></div>
+    </div>
+
+    <div class="step" data-phase="1" data-status="progress">
+      <button class="status-btn progress" onclick="cycleStatus(this)"><div class="dot"></div>Em andamento</button>
+      <div class="step-num f1">3</div>
+      <div class="step-body"><div class="step-title">Conduzir entrevista com o analista financeiro</div><div class="step-desc">Mapear: o que ele recebe do executivo comercial, como calcula o comissionamento, quais planilhas usa, o que entrega e para quem. Gravar e transcrever.</div><div class="tags"><span class="tag negocio">Financeiro</span><span class="tag bloq">Bloqueante para F2</span></div></div>
+    </div>
+
+    <div class="step" data-phase="1" data-status="todo">
+      <button class="status-btn todo" onclick="cycleStatus(this)"><div class="dot"></div>A fazer</button>
+      <div class="step-num f1">4</div>
+      <div class="step-body"><div class="step-title">Ler e mapear especificação de status de proposta</div><div class="step-desc">Entender a máquina de estados atual: rascunho → pendente → aprovada → recusada. Quem pode alterar cada status?</div><div class="tags"><span class="tag produto">Produto</span></div></div>
+    </div>
+
+    <div class="step" data-phase="1" data-status="todo">
+      <button class="status-btn todo" onclick="cycleStatus(this)"><div class="dot"></div>A fazer</button>
+      <div class="step-num f1">5</div>
+      <div class="step-body"><div class="step-title">Levantar proxies e inputs da jornada AS-IS</div><div class="step-desc">Para cada etapa: o que entra (input), o que é calculado/derivado (proxy), o que sai (output). Montar tabela: campo · tipo · fonte · owner.</div><div class="tags"><span class="tag produto">Produto</span><span class="tag dados">Dados</span></div></div>
+    </div>
+
+    <div class="step" data-phase="1" data-status="todo">
+      <button class="status-btn todo" onclick="cycleStatus(this)"><div class="dot"></div>A fazer</button>
+      <div class="step-num f1">6</div>
+      <div class="step-body"><div class="step-title">Documentar fluxo AS-IS com raias por área</div><div class="step-desc">Swimlane: Executivo Comercial → Analista Financeiro → Consolidador de dashboard → Gerente de Vendas. Mostrar handoffs e dores em cada passagem.</div><div class="tags"><span class="tag produto">Produto</span><span class="tag bloq">Artefato central</span></div></div>
+    </div>
+
+    <div class="step" data-phase="1" data-status="todo">
+      <button class="status-btn todo" onclick="cycleStatus(this)"><div class="dot"></div>A fazer</button>
+      <div class="step-num f1">7</div>
+      <div class="step-body"><div class="step-title">Definir e priorizar os problemas e dores</div><div class="step-desc">A partir das entrevistas e do AS-IS, listar as dores por impacto: o que gera retrabalho, erro, atraso.</div><div class="tags"><span class="tag produto">Produto</span><span class="tag negocio">Negócio</span></div></div>
+    </div>
+
+    <div class="step" data-phase="1" data-status="todo">
+      <button class="status-btn todo" onclick="cycleStatus(this)"><div class="dot"></div>A fazer</button>
+      <div class="step-num f1">8</div>
+      <div class="step-body"><div class="step-title">Validar AS-IS com os entrevistados</div><div class="step-desc">Enviar o fluxo documentado para cada stakeholder confirmar. Sem validação, o AS-IS é hipótese, não fato.</div><div class="tags"><span class="tag negocio">Financeiro</span><span class="tag negocio">Negócio</span></div></div>
+    </div>
+
+    <div class="step" data-phase="1" data-status="todo">
+      <button class="status-btn todo" onclick="cycleStatus(this)"><div class="dot"></div>A fazer</button>
+      <div class="step-num f1">9</div>
+      <div class="step-body"><div class="step-title">Update de stakeholders — marco de fim da Fase 1</div><div class="step-desc">Apresentar síntese do AS-IS, dores priorizadas e lista inicial de inputs. Enviar materiais 48h antes.</div><div class="tags"><span class="tag produto">Produto</span><span class="tag negocio">Negócio</span><span class="tag eng">Eng</span></div></div>
+    </div>
+
+    <div class="section-label">Critério de saída</div>
+    <div class="exit">
+      <strong>Fase 1 está concluída quando:</strong>
+      <div class="exit-item"><span class="exit-tick">✓</span><span>Fluxo AS-IS documentado com raias e validado pelos stakeholders</span></div>
+      <div class="exit-item"><span class="exit-tick">✓</span><span>Lista de inputs mapeada com tipo, fonte e owner por campo</span></div>
+      <div class="exit-item"><span class="exit-tick">✓</span><span>Dores priorizadas por impacto</span></div>
+      <div class="exit-item"><span class="exit-tick">✓</span><span>Update de stakeholders realizado</span></div>
+    </div>
+  </section>
+
+  <!-- FASE 2 -->
+  <section id="fase2">
+    <div class="phase-header">
+      <div class="phase-badge f2">F2</div>
+      <div class="phase-info">
+        <h2>Proxies · Inputs · Outputs · Arquitetura de dados</h2>
+        <div class="phase-meta">Abril → Maio · Paralela à Fase 1 a partir da 2ª semana</div>
+      </div>
+    </div>
+    <div class="phase-goal">Pergunta central: "Quais são todas as informações necessárias para garantir todos os processos downstream?" Modelar campos, proxies e arquitetura com DBA, Dados e Engenharia.</div>
+    <div class="warn"><span>⚠</span>&nbsp;Campos sem owner não chegam prontos. Regras de proxy costumam estar na cabeça de uma pessoa só — documente com ela presente.</div>
+    <div class="section-label">Passo a passo</div>
+
+    <div class="step" data-phase="2" data-status="progress">
+      <button class="status-btn progress" onclick="cycleStatus(this)"><div class="dot"></div>Em andamento</button>
+      <div class="step-num f2">1</div>
+      <div class="step-body"><div class="step-title">Mapear todos os campos e taxas da proposta</div><div class="step-desc">Transformar o que existe nas planilhas em lista estruturada: nome · tipo · status (disponível / integrar / criar) · owner.</div><div class="tags"><span class="tag produto">Produto</span><span class="tag dados">Dados</span></div></div>
+    </div>
+
+    <div class="step" data-phase="2" data-status="todo">
+      <button class="status-btn todo" onclick="cycleStatus(this)"><div class="dot"></div>A fazer</button>
+      <div class="step-num f2">2</div>
+      <div class="step-body"><div class="step-title">Resolver campos bloqueantes: forma_proposta e comissao_autores_pct</div><div class="step-desc">Confirmar com Financeiro: valores do enum de forma_proposta e fonte da comissão de autores (ECAD ou tabela interna).</div><div class="tags"><span class="tag negocio">Financeiro</span><span class="tag bloq">Bloqueante</span></div></div>
+    </div>
+
+    <div class="step" data-phase="2" data-status="todo">
+      <button class="status-btn todo" onclick="cycleStatus(this)"><div class="dot"></div>A fazer</button>
+      <div class="step-num f2">3</div>
+      <div class="step-body"><div class="step-title">Sessão com time de Dados — Data Quality Report</div><div class="step-desc">Quais campos existem hoje e com qual qualidade? Gerar DQR: % preenchimento, % erro, lacunas.</div><div class="tags"><span class="tag dados">Dados</span></div></div>
+    </div>
+
+    <div class="step" data-phase="2" data-status="todo">
+      <button class="status-btn todo" onclick="cycleStatus(this)"><div class="dot"></div>A fazer</button>
+      <div class="step-num f2">4</div>
+      <div class="step-body"><div class="step-title">Sessão com Engenharia — viabilidade e esforço</div><div class="step-desc">Para cada campo: disponível / integrar / criar. Levantar latência esperada, volume/mês e pico. Definir SLAs mínimos.</div><div class="tags"><span class="tag eng">Eng</span></div></div>
+    </div>
+
+    <div class="step" data-phase="2" data-status="todo">
+      <button class="status-btn todo" onclick="cycleStatus(this)"><div class="dot"></div>A fazer</button>
+      <div class="step-num f2">5</div>
+      <div class="step-body"><div class="step-title">Sessão com DBA — modelagem e schemas</div><div class="step-desc">Definir onde cada campo é armazenado, normalização, modelo inicial de schema, índices e relacionamentos.</div><div class="tags"><span class="tag dba">DBA</span></div></div>
+    </div>
+
+    <div class="step" data-phase="2" data-status="todo">
+      <button class="status-btn todo" onclick="cycleStatus(this)"><div class="dot"></div>A fazer</button>
+      <div class="step-num f2">6</div>
+      <div class="step-body"><div class="step-title">Documentar regras de cálculo de cada proxy</div><div class="step-desc">Para cada proxy: inputs · fórmula · output · edge cases (nulo, inconsistente, fora do range). Pedir exemplo numérico real.</div><div class="tags"><span class="tag eng">Eng</span><span class="tag negocio">Financeiro</span><span class="tag dba">DBA</span></div></div>
+    </div>
+
+    <div class="step" data-phase="2" data-status="todo">
+      <button class="status-btn todo" onclick="cycleStatus(this)"><div class="dot"></div>A fazer</button>
+      <div class="step-num f2">7</div>
+      <div class="step-body"><div class="step-title">Definir arquitetura end-to-end: input → proxy → output</div><div class="step-desc">Desenhar fluxo completo de dados. Incluir consumers (BI, Financeiro, CS), formato esperado, frequência e latência por consumer.</div><div class="tags"><span class="tag eng">Eng</span><span class="tag dba">DBA</span><span class="tag dados">Dados</span></div></div>
+    </div>
+
+    <div class="step" data-phase="2" data-status="todo">
+      <button class="status-btn todo" onclick="cycleStatus(this)"><div class="dot"></div>A fazer</button>
+      <div class="step-num f2">8</div>
+      <div class="step-body"><div class="step-title">Validar lista final de campos e arquitetura com negócio</div><div class="step-desc">Stakeholders de negócio confirmam que nenhum campo faltou e que os outputs cobrem as necessidades.</div><div class="tags"><span class="tag negocio">Negócio</span><span class="tag produto">Produto</span></div></div>
+    </div>
+
+    <div class="section-label">Critério de saída</div>
+    <div class="exit">
+      <strong>Fase 2 está concluída quando:</strong>
+      <div class="exit-item"><span class="exit-tick">✓</span><span>Tabela de campos validada com Dados, Eng e DBA</span></div>
+      <div class="exit-item"><span class="exit-tick">✓</span><span>Enums de forma_proposta definidos e comissao_autores_pct com fonte confirmada</span></div>
+      <div class="exit-item"><span class="exit-tick">✓</span><span>Data Quality Report gerado</span></div>
+      <div class="exit-item"><span class="exit-tick">✓</span><span>Arquitetura validada + modelo DBA aprovado + proxies com regras documentadas</span></div>
+      <div class="exit-item"><span class="exit-tick">✓</span><span>SLAs definidos (tempo de resposta, volume/mês, pico)</span></div>
+    </div>
+  </section>
+
+  <!-- FASE 3 -->
+  <section id="fase3">
+    <div class="phase-header">
+      <div class="phase-badge f3">F3</div>
+      <div class="phase-info">
+        <h2>Ideação · Prototipagem · Validações técnicas e de negócio</h2>
+        <div class="phase-meta">Maio → Junho · Inicia após marcos principais da Fase 2</div>
+      </div>
+    </div>
+    <div class="phase-goal">Com inputs e arquitetura definidos, projetar a solução. Prototipar a interface, validar decisões técnicas com Tech Leads e alinhar com negócio antes de escrever uma linha de PRD.</div>
+    <div class="section-label">Passo a passo</div>
+
+    <div class="step" data-phase="3" data-status="todo">
+      <button class="status-btn todo" onclick="cycleStatus(this)"><div class="dot"></div>A fazer</button>
+      <div class="step-num f3">1</div>
+      <div class="step-body"><div class="step-title">Definir OKRs e métricas de sucesso do módulo</div><div class="step-desc">O que indica que o módulo resolveu o problema? Ex: redução de retrabalho no cálculo de comissão, tempo de fechamento, acurácia no dashboard.</div><div class="tags"><span class="tag produto">Produto</span><span class="tag negocio">Negócio</span><span class="tag bloq">Faltava nos to-dos</span></div></div>
+    </div>
+
+    <div class="step" data-phase="3" data-status="todo">
+      <button class="status-btn todo" onclick="cycleStatus(this)"><div class="dot"></div>A fazer</button>
+      <div class="step-num f3">2</div>
+      <div class="step-body"><div class="step-title">Mapear campos que a interface precisa expor como utilizável</div><div class="step-desc">Traduzir lista técnica em elementos de UI: inputs do usuário, campos calculados/derivados, campos read-only.</div><div class="tags"><span class="tag produto">Produto</span></div></div>
+    </div>
+
+    <div class="step" data-phase="3" data-status="todo">
+      <button class="status-btn todo" onclick="cycleStatus(this)"><div class="dot"></div>A fazer</button>
+      <div class="step-num f3">3</div>
+      <div class="step-body"><div class="step-title">Criar protótipos de baixa/média fidelidade</div><div class="step-desc">Priorizar telas críticas: cadastro de proposta, visualização de comissão calculada, dashboard de gerentes. Foco em fluxo e campos.</div><div class="tags"><span class="tag produto">Produto</span></div></div>
+    </div>
+
+    <div class="step" data-phase="3" data-status="todo">
+      <button class="status-btn todo" onclick="cycleStatus(this)"><div class="dot"></div>A fazer</button>
+      <div class="step-num f3">4</div>
+      <div class="step-body"><div class="step-title">Validar protótipos com stakeholders de negócio</div><div class="step-desc">Executivo comercial, analista financeiro, consolidador do dashboard e gerentes de vendas. Um usuário por perfil é suficiente.</div><div class="tags"><span class="tag negocio">Negócio</span><span class="tag produto">Produto</span></div></div>
+    </div>
+
+    <div class="step" data-phase="3" data-status="todo">
+      <button class="status-btn todo" onclick="cycleStatus(this)"><div class="dot"></div>A fazer</button>
+      <div class="step-num f3">5</div>
+      <div class="step-body"><div class="step-title">Validar definições técnicas com Tech Leads</div><div class="step-desc">Apresentar arquitetura + protótipos para Tech Leads confirmarem viabilidade, riscos e dependências.</div><div class="tags"><span class="tag eng">Eng</span><span class="tag dba">DBA</span></div></div>
+    </div>
+
+    <div class="step" data-phase="3" data-status="todo">
+      <button class="status-btn todo" onclick="cycleStatus(this)"><div class="dot"></div>A fazer</button>
+      <div class="step-num f3">6</div>
+      <div class="step-body"><div class="step-title">Definir outputs: contratos, advanced e coleta de dados</div><div class="step-desc">Contratos de API, relatórios, exports, notificações. Levantar por consumer: formato, frequência, latência tolerada.</div><div class="tags"><span class="tag eng">Eng</span><span class="tag dados">Dados</span><span class="tag negocio">Negócio</span></div></div>
+    </div>
+
+    <div class="step" data-phase="3" data-status="todo">
+      <button class="status-btn todo" onclick="cycleStatus(this)"><div class="dot"></div>A fazer</button>
+      <div class="step-num f3">7</div>
+      <div class="step-body"><div class="step-title">Update de stakeholders — marco de fim da Fase 3</div><div class="step-desc">Apresentar: solução validada, decisões técnicas fechadas, OKRs definidos e riscos mapeados. Enviar materiais 48h antes.</div><div class="tags"><span class="tag produto">Produto</span><span class="tag negocio">Negócio</span><span class="tag eng">Eng</span></div></div>
+    </div>
+
+    <div class="section-label">Critério de saída</div>
+    <div class="exit">
+      <strong>Fase 3 está concluída quando:</strong>
+      <div class="exit-item"><span class="exit-tick">✓</span><span>OKRs e métricas de sucesso definidos e aprovados</span></div>
+      <div class="exit-item"><span class="exit-tick">✓</span><span>Protótipos validados com usuários de cada perfil</span></div>
+      <div class="exit-item"><span class="exit-tick">✓</span><span>Tech Leads sinalizaram viabilidade e riscos mapeados</span></div>
+      <div class="exit-item"><span class="exit-tick">✓</span><span>Contratos de output aprovados pelos consumers</span></div>
+      <div class="exit-item"><span class="exit-tick">✓</span><span>Update de stakeholders realizado</span></div>
+    </div>
+  </section>
+
+  <!-- FASE 4 -->
+  <section id="fase4">
+    <div class="phase-header">
+      <div class="phase-badge f4">F4</div>
+      <div class="phase-info">
+        <h2>PRD · User Stories · Dev Handoff</h2>
+        <div class="phase-meta">Junho · Entrega final</div>
+      </div>
+    </div>
+    <div class="phase-goal">Formalizar tudo que foi descoberto e validado nas fases anteriores. O PRD não é o início do trabalho — é a consolidação dele. Use o prompt do Chavarro como base.</div>
+    <div class="section-label">Passo a passo</div>
+
+    <div class="step" data-phase="4" data-status="done">
+      <button class="status-btn done" onclick="cycleStatus(this)"><div class="dot"></div>Concluído</button>
+      <div class="step-num f4">1</div>
+      <div class="step-body"><div class="step-title">Utilizar prompt do Chavarro para estruturar o PRD</div><div class="step-desc">Template disponível para uso na escrita.</div><div class="tags"><span class="tag produto">Produto</span></div></div>
+    </div>
+
+    <div class="step" data-phase="4" data-status="todo">
+      <button class="status-btn todo" onclick="cycleStatus(this)"><div class="dot"></div>A fazer</button>
+      <div class="step-num f4">2</div>
+      <div class="step-body"><div class="step-title">Escrever o PRD completo</div><div class="step-desc">Incluir: contexto e problema, solução proposta, campos e regras de negócio, fluxos, edge cases, critérios de aceite, OKRs e dependências técnicas.</div><div class="tags"><span class="tag produto">Produto</span></div></div>
+    </div>
+
+    <div class="step" data-phase="4" data-status="todo">
+      <button class="status-btn todo" onclick="cycleStatus(this)"><div class="dot"></div>A fazer</button>
+      <div class="step-num f4">3</div>
+      <div class="step-body"><div class="step-title">Validar PRD com Tech Leads</div><div class="step-desc">Revisão técnica: viabilidade, ambiguidades nas regras de negócio, gaps de especificação e estimativa de esforço.</div><div class="tags"><span class="tag eng">Eng</span><span class="tag dba">DBA</span></div></div>
+    </div>
+
+    <div class="step" data-phase="4" data-status="todo">
+      <button class="status-btn todo" onclick="cycleStatus(this)"><div class="dot"></div>A fazer</button>
+      <div class="step-num f4">4</div>
+      <div class="step-body"><div class="step-title">Escrever User Stories</div><div class="step-desc">Uma US por funcionalidade. Formato: Como [perfil], quero [ação] para [benefício]. Incluir critérios de aceite.</div><div class="tags"><span class="tag produto">Produto</span></div></div>
+    </div>
+
+    <div class="step" data-phase="4" data-status="todo">
+      <button class="status-btn todo" onclick="cycleStatus(this)"><div class="dot"></div>A fazer</button>
+      <div class="step-num f4">5</div>
+      <div class="step-body"><div class="step-title">Preparar apresentação final do projeto</div><div class="step-desc">Estrutura: por que fizemos o discovery · o que descobrimos · o que vamos construir · riscos · roadmap de entrega · próximos passos.</div><div class="tags"><span class="tag produto">Produto</span><span class="tag negocio">Negócio</span></div></div>
+    </div>
+
+    <div class="step" data-phase="4" data-status="todo">
+      <button class="status-btn todo" onclick="cycleStatus(this)"><div class="dot"></div>A fazer</button>
+      <div class="step-num f4">6</div>
+      <div class="step-body"><div class="step-title">Apresentação e update final aos stakeholders</div><div class="step-desc">Reunião de decisão. Enviar materiais 48h antes. Chegar com 3 opções de roadmap. Ligar cada decisão a uma dor do AS-IS.</div><div class="tags"><span class="tag negocio">Negócio</span><span class="tag produto">Produto</span><span class="tag eng">Eng</span></div></div>
+    </div>
+
+    <div class="section-label">Critério de saída</div>
+    <div class="exit">
+      <strong>Fase 4 está concluída quando:</strong>
+      <div class="exit-item"><span class="exit-tick">✓</span><span>PRD aprovado por Produto, Eng e Negócio</span></div>
+      <div class="exit-item"><span class="exit-tick">✓</span><span>User Stories escritas com critérios de aceite</span></div>
+      <div class="exit-item"><span class="exit-tick">✓</span><span>Apresentação final realizada com quórum de decisão</span></div>
+      <div class="exit-item"><span class="exit-tick">✓</span><span>Kickoff de desenvolvimento agendado</span></div>
+    </div>
+  </section>
+
+  <!-- ONDE DOCUMENTAR -->
+  <section id="docs">
+    <div class="phase-header">
+      <div class="phase-badge doc">📄</div>
+      <div class="phase-info">
+        <h2>Onde documentar a evolução</h2>
+        <div class="phase-meta">Referência de artefatos por fase e ferramenta</div>
+      </div>
+    </div>
+    <table class="doc-table">
+      <thead><tr><th>Artefato</th><th>Fase</th><th>Onde</th><th>Frequência</th></tr></thead>
+      <tbody>
+        <tr><td>Fluxo AS-IS com raias (swimlane)</td><td>F1</td><td><span class="figjam">FigJam</span></td><td>Após cada entrevista, até validação final</td></tr>
+        <tr><td>Tabela de campos · tipo · fonte · status · owner</td><td>F1→F2</td><td><span class="notion">Notion</span> / <span class="sheet">Sheets</span></td><td>Viva — atualizar a cada sessão</td></tr>
+        <tr><td>Lista de dores priorizadas</td><td>F1</td><td><span class="notion">Notion</span></td><td>Após entrevistas, congelar ao final da F1</td></tr>
+        <tr><td>Roteiro e transcrição de entrevistas</td><td>F1→F2</td><td><span class="notion">Notion</span></td><td>Após cada entrevista</td></tr>
+        <tr><td>Data Quality Report (DQR)</td><td>F2</td><td><span class="sheet">Sheets</span></td><td>Gerado na sessão com Dados, revisado com Eng</td></tr>
+        <tr><td>Regras de proxies · inputs · fórmula · edge cases</td><td>F2</td><td><span class="notion">Notion</span></td><td>Após cada sessão com Financeiro/Eng/DBA</td></tr>
+        <tr><td>Diagrama de arquitetura end-to-end</td><td>F2→F3</td><td><span class="figjam">FigJam</span></td><td>Artefato vivo — atualizar a cada sessão técnica</td></tr>
+        <tr><td>Protótipos de interface</td><td>F3</td><td><span class="figjam">Figma</span></td><td>Iterativo durante a Fase 3</td></tr>
+        <tr><td>OKRs e métricas de sucesso</td><td>F3</td><td><span class="notion">Notion</span></td><td>Definir na F3, validar com negócio antes do PRD</td></tr>
+        <tr><td>Contratos de API / outputs</td><td>F3</td><td><span class="notion">Swagger / Notion</span></td><td>Após sessão com consumers de output</td></tr>
+        <tr><td>PRD completo</td><td>F4</td><td><span class="notion">Notion</span></td><td>Escrito na F4, aprovado antes das US</td></tr>
+        <tr><td>User Stories com critérios de aceite</td><td>F4</td><td><span class="notion">Notion</span> → Linear/Jira</td><td>Após aprovação do PRD</td></tr>
+        <tr><td>Deck de update de stakeholders</td><td>F1,F3,F4</td><td>Slides</td><td>Fim de cada fase com update previsto</td></tr>
+        <tr><td>Gantt e roadmap</td><td>Contínuo</td><td><span class="figjam">FigJam</span> / Slides</td><td>Atualizar a cada update de stakeholders</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ROTINA -->
+  <section id="rotina">
+    <div class="phase-header">
+      <div class="phase-badge doc">🗓</div>
+      <div class="phase-info">
+        <h2>Rotina semanal de gestão</h2>
+        <div class="phase-meta">O que fazer todo dia · toda semana · a cada fase</div>
+      </div>
+    </div>
+    <div class="routine-grid">
+      <div class="routine-card">
+        <h4>Todo dia (5–10 min)</h4>
+        <div class="routine-item"><div class="routine-bullet"></div><span>Revisar checklist e mover status dos itens em evolução</span></div>
+        <div class="routine-item"><div class="routine-bullet"></div><span>Registrar insights ou dúvidas no Notion antes de esquecer</span></div>
+        <div class="routine-item"><div class="routine-bullet"></div><span>Verificar se algum campo ❓ desbloqueou — atualizar a tabela</span></div>
+      </div>
+      <div class="routine-card">
+        <h4>Toda semana (30 min)</h4>
+        <div class="routine-item"><div class="routine-bullet"></div><span>Revisar progresso das fases em andamento (F1 + F2 agora)</span></div>
+        <div class="routine-item"><div class="routine-bullet"></div><span>Identificar bloqueios: campo sem owner, sessão com DBA pendente</span></div>
+        <div class="routine-item"><div class="routine-bullet"></div><span>Atualizar o Gantt se necessário</span></div>
+        <div class="routine-item"><div class="routine-bullet"></div><span>Enviar status assíncrono para stakeholders (2–3 linhas)</span></div>
+      </div>
+      <div class="routine-card">
+        <h4>Antes de cada entrevista</h4>
+        <div class="routine-item"><div class="routine-bullet"></div><span>Revisar o roteiro de perguntas para o perfil específico</span></div>
+        <div class="routine-item"><div class="routine-bullet"></div><span>Checar quais campos estão ❓ na tabela — prioridade na conversa</span></div>
+        <div class="routine-item"><div class="routine-bullet"></div><span>Confirmar gravação e avisar o entrevistado</span></div>
+      </div>
+      <div class="routine-card">
+        <h4>Após cada entrevista</h4>
+        <div class="routine-item"><div class="routine-bullet"></div><span>Transcrever ou resumir no Notion em até 24h</span></div>
+        <div class="routine-item"><div class="routine-bullet"></div><span>Atualizar tabela de campos com o que foi confirmado</span></div>
+        <div class="routine-item"><div class="routine-bullet"></div><span>Adicionar dores novas à lista priorizada</span></div>
+        <div class="routine-item"><div class="routine-bullet"></div><span>Atualizar o swimlane AS-IS se o fluxo mudou</span></div>
+      </div>
+      <div class="routine-card">
+        <h4>Antes de cada update de stk.</h4>
+        <div class="routine-item"><div class="routine-bullet"></div><span>Enviar materiais 48h antes da reunião</span></div>
+        <div class="routine-item"><div class="routine-bullet"></div><span>Preparar 3 opções quando for reunião de decisão — nunca 1</span></div>
+        <div class="routine-item"><div class="routine-bullet"></div><span>Ligar cada decisão a uma dor identificada no AS-IS</span></div>
+      </div>
+      <div class="routine-card">
+        <h4>Para avançar de fase</h4>
+        <div class="routine-item"><div class="routine-bullet"></div><span>Todos os critérios de saída com status "Concluído"</span></div>
+        <div class="routine-item"><div class="routine-bullet"></div><span>Nenhum campo bloqueante ainda ❓</span></div>
+        <div class="routine-item"><div class="routine-bullet"></div><span>Update de stakeholders da transição realizado</span></div>
+        <div class="routine-item"><div class="routine-bullet"></div><span>Só então mover itens da próxima fase para "Em andamento"</span></div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<script>
+  const CYCLE  = ['todo','progress','done'];
+  const LABELS = { todo:'A fazer', progress:'Em andamento', done:'Concluído' };
+
+  function cycleStatus(btn) {
+    const step = btn.closest('.step');
+    const cur  = step.dataset.status;
+    const next = CYCLE[(CYCLE.indexOf(cur) + 1) % CYCLE.length];
+    step.dataset.status = next;
+    btn.className = 'status-btn ' + next;
+    btn.innerHTML = `<div class="dot"></div>${LABELS[next]}`;
+    updateProgress();
+    persist();
+  }
+
+  function updateProgress() {
+    [1,2,3,4].forEach(ph => {
+      const steps = [...document.querySelectorAll(`[data-phase="${ph}"]`)];
+      const total = steps.length; if (!total) return;
+      const done  = steps.filter(s => s.dataset.status === 'done').length;
+      const wip   = steps.filter(s => s.dataset.status === 'progress').length;
+      const pctD  = Math.round(done/total*100);
+      const pctW  = Math.round(wip/total*100);
+      const bd = document.getElementById(`bar${ph}d`);
+      const bw = document.getElementById(`bar${ph}w`);
+      if (bd) bd.style.width = pctD + '%';
+      if (bw) bw.style.width = pctW + '%';
+      const pc = document.getElementById(`pct${ph}`);
+      if (pc) pc.textContent = pctD + '%';
+      const lb = document.getElementById(`lbl${ph}`);
+      if (lb) lb.textContent = done === total ? '✓ Concluída' : wip > 0 ? 'Em andamento' : done > 0 ? 'Iniciada' : 'Aguardando';
+    });
+  }
+
+  function persist() {
+    const state = {};
+    document.querySelectorAll('.step[data-phase]').forEach((s,i) => state[i] = s.dataset.status);
+    try { localStorage.setItem('dg_status', JSON.stringify(state)); } catch(e) {}
+  }
+
+  function restore() {
+    let state; try { state = JSON.parse(localStorage.getItem('dg_status')); } catch(e) {}
+    if (!state) return;
+    document.querySelectorAll('.step[data-phase]').forEach((s,i) => {
+      const v = state[i]; if (!v) return;
+      s.dataset.status = v;
+      const btn = s.querySelector('.status-btn');
+      if (btn) { btn.className = 'status-btn ' + v; btn.innerHTML = `<div class="dot"></div>${LABELS[v]}`; }
+    });
+  }
+
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (!e.isIntersecting) return;
+      document.querySelectorAll('.nav a').forEach(l => l.classList.remove('active'));
+      const a = document.querySelector(`.nav a[href="#${e.target.id}"]`);
+      if (a) a.classList.add('active');
+    });
+  }, { rootMargin:'-40% 0px -55% 0px' });
+  document.querySelectorAll('section[id]').forEach(s => obs.observe(s));
+
+  restore();
+  updateProgress();
+</script>
+</body>
+</html>
